@@ -4,26 +4,35 @@ function App() {
     const [todoList, setTodoList] = useState([]);
     const [todoValue, setTodoValue] = useState("");
 
-
-
     const handleSubmit = (event) => {
         event.preventDefault();
-        // 함수에서 if문을 쓸 때는 된다 / 안된다를 판별하는 과정임
-        // 초보분드르이 생각 흐름은 해야되는 일을 중심으로 if의 조건을 구성하게 됨
-        // 아래 코드는 input 의 입력값이 "" 이 아닐 떄에만 저장을 해달라고 해야지~
-        //if (todoValue !== "") {
-        //    setTodoList([...todoList, todoValue]);
-        //    setTodoValue("");
-        //}
-
-        // if 문을 통해 된다 / 안된다를 판별할 떄에는 안될 떄를 탈락 시키는 코드 구성을 가져야 함
-        // YES 를 진행하는 과정으로 코드를 진행해야 함
-        if (todoValue === "") {
+        if (todoValue === "" || todoValue === " ") {
             return;
         }
         setTodoList([...todoList, todoValue]);
-        setTodoValue("" || todoValue === " ");
+        setTodoValue("" );
 };
+
+    const handleDeletTodo = (target) => {
+        // todoList 에서 지워야되는 대상을 지우는 것
+        // 지워야 되는 대상을 특정하려면?
+        // 클릭을 한 대상, event가 일어난 대상은 button임. "밥먹기"라는 글자도 아니고, li도 아님
+
+        // 버튼을 통해서는 우리가 삭제해야 하는 "밤먹기" 라는 그 대상 자체, 인덱스번호를 가져올 수 있는 방법이 없음
+
+        // 아래에 onClick에 부분에 함수 안의 함수 형태로 바꾸어, index번호를 받는 handleDeleteTodo 함수를 바꿨음
+        // 결론 : handleDeleteTodo 함수가 해야하는 일은 들어온 index번호를 받아 todoList의 값을 변경하는 일을 해야함
+
+        // filter (O)           =>걸러낸다  index가 아닌 애들만 남기면 됨
+        const result = todoList.filter((item, index) => { return target !== index });
+        // 1순회 때 "밥먹기" -> index : 0    -> 조건인 1 != 0 -> true   -> result에 "밥먹기" 포함됨
+        // 2순회 때 "잠자기" -> index : 1     -> 조건의 1 !== 1 -> false  -> 걸러짐
+        // 3순회 떄 "공부하기" -> index : 2    -> 조건의 1 != 2  -. true  -> result에 "공부하기" 가 포함됨
+
+        // 결론인 ["밥먹기", "공부하기"] 새로운 array가 result에 정장됨
+        setTodoList(result);
+        // React는 todoList state의 값이 바뀌었으니 화면을 리렌더링함
+    };
 
     return(
         <>
@@ -33,24 +42,27 @@ function App() {
                     type={"text"}
                     placeholder={"Write your to do..."}
                        onChange={(event) => { setTodoValue(event.target.value) }}
-                       /*
-                        input의 value라는 속성이 사용자가 입력하는 값이 존재하게 되는 속성임
-                         평상시엔 이 아랫줄이 동작을 안 하다가, handleSubmit의 serTodoValue를 통해
-                         todoValue의 값이 ""으로 변하는 순간 리액트는 아랫줄에 ""을 집어넣음
-                         */
                         value={todoValue}
                 />
                 <button type="submit">Add To Do</button>
             </form>
             <hr />
             <ul>
-                {/*
-                     return 안에서 {} 를 통해 map()을 사용할 떄에는
-                     반복되는 요소가 출력되기 떄문에 그걸 리액트가 구분할 수 있도록
-                     key(중복되지않는 값) 를 리턴되는 최상위 요소에게 붙여줘야 함
-                     (인식표 개념)
-                */}
-                {todoList.map((item => <li>{item}</li>)}
+                {todoList.map((item, index) => <li key={index}>
+                {item}
+
+                <button onClick={() => {
+                    return handleDeletTodo(index);
+
+                    // onClick이든 onSubmit, onChange 에 제공되어야 되는 함수 설계도엔 event만 제공함
+                    //
+                    // event 뿐만 아니라 다른 데이터도 필요하다면 그 함수 셀계도만으로는 불가ㅏ능
+                    //      => 함수 안의 함수를 새로 만들어서 내가 원하는 데잍터를 집어넣어서 함수를 실행
+
+                    // onClick이 실행되면 () => {} 가 실행되는데
+                    // 그 안에 handleDeleteTodo(index)가 실행됨
+                }}>❌</button>
+                </li>)}
             </ul>
         </>
     )
